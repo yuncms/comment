@@ -1,0 +1,34 @@
+{
+  "name": "yuncms/comment",
+  "description": "The comment module for yuncms.",
+  "keywords": [
+    "yuncms",
+    "comment"
+  ],
+  "type": "yii2-extension",
+  "license": "MIT",
+  "require": {
+    "yuncms/framework": "~1.0.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "yuncms\\comment\\": "src"
+    }
+  },
+  "extra": {
+    "yuncms": "mainfest.php",
+    "branch-alias": {
+      "dev-master": "2.0-dev"
+    }
+  },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://asset-packagist.org"
+    },
+    {
+      "type": "composer",
+      "url": "https://packagist.phpcomposer.com"
+    }
+  ]
+}
