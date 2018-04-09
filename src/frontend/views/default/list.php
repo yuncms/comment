@@ -1,5 +1,5 @@
 <?php
-use yii\widgets\ListView;
+use yuncms\widgets\ListView;
 ?>
 <?= ListView::widget([
     'options' => ['class' => null],

@@ -7,7 +7,7 @@
 namespace yuncms\comment\frontend\models;
 
 use Yii;
-use yii\base\Model;
+use yuncms\base\Model;
 use yuncms\comment\models\Comment;
 
 /**

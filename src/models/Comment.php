@@ -9,15 +9,14 @@ namespace yuncms\comment\models;
 
 use Yii;
 use yii\base\InvalidConfigException;
+use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveQuery;
 use yii\db\BaseActiveRecord;
-use yii\helpers\ArrayHelper;
-use yii\helpers\HtmlPurifier;
 use yii\behaviors\AttributeBehavior;
 use yii\behaviors\BlameableBehavior;
+use yuncms\helpers\ArrayHelper;
+use yuncms\helpers\HtmlPurifier;
 use yuncms\db\ActiveRecord;
-use yuncms\core\ScanInterface;
-use yuncms\core\jobs\ScanTextJob;
 use yuncms\notifications\contracts\NotificationInterface;
 use yuncms\notifications\NotificationTrait;
 use yuncms\user\models\User;
@@ -41,7 +40,7 @@ use yuncms\user\models\User;
  * @property-read User $toUser 用户实例
  * @property-read User $user 用户实例
  */
-class Comment extends ActiveRecord implements ScanInterface, NotificationInterface
+class Comment extends ActiveRecord implements NotificationInterface
 {
     use NotificationTrait;
 
@@ -68,13 +67,13 @@ class Comment extends ActiveRecord implements ScanInterface, NotificationInterfa
     {
         return [
             [
-                'class' => 'yii\behaviors\TimestampBehavior',
+                'class' => TimestampBehavior::class,
                 'attributes' => [
                     BaseActiveRecord::EVENT_BEFORE_INSERT => ['created_at'],
                 ],
             ],
             [
-                'class' => AttributeBehavior::className(),
+                'class' => AttributeBehavior::class,
                 'attributes' => [
                     ActiveRecord::EVENT_AFTER_FIND => 'content'
                 ],
@@ -83,7 +82,7 @@ class Comment extends ActiveRecord implements ScanInterface, NotificationInterfa
                 }
             ],
             [
-                'class' => BlameableBehavior::className(),
+                'class' => BlameableBehavior::class,
                 'attributes' => [
                     ActiveRecord::EVENT_BEFORE_INSERT => 'user_id',
                 ],
@@ -134,12 +133,12 @@ class Comment extends ActiveRecord implements ScanInterface, NotificationInterfa
             if ($model) {
                 //一分钟内多次提交
                 if ((time() - $model->created_at) < 60) {
-                    $this->addError($attribute, Yii::t('comment', 'One minute only comment once.'));
+                    $this->addError($attribute, Yii::t('yuncms/comment', 'One minute only comment once.'));
                 }
                 //计算相似度
                 $similar = similar_text($model->content, $this->content);
                 if ($similar > 50) {
-                    $this->addError($attribute, Yii::t('comment', 'You can not submit the same comment.'));
+                    $this->addError($attribute, Yii::t('yuncms/comment', 'You can not submit the same comment.'));
                 }
             }
         }
@@ -151,12 +150,12 @@ class Comment extends ActiveRecord implements ScanInterface, NotificationInterfa
     public function attributeLabels()
     {
         return [
-            'content' => Yii::t('comment', 'Content'),
-            'parent' => Yii::t('comment', 'Parent Content'),
-            'model_class' => Yii::t('comment', 'Model Class'),
-            'model_id' => Yii::t('comment', 'Model Id'),
-            'status' => Yii::t('comment', 'Status'),
-            'created_at' => Yii::t('comment', 'Created At'),
+            'content' => Yii::t('yuncms/comment', 'Content'),
+            'parent' => Yii::t('yuncms/comment', 'Parent Content'),
+            'model_class' => Yii::t('yuncms/comment', 'Model Class'),
+            'model_id' => Yii::t('yuncms/comment', 'Model Id'),
+            'status' => Yii::t('yuncms/comment', 'Status'),
+            'created_at' => Yii::t('yuncms/comment', 'Created At'),
         ];
     }
 
@@ -239,38 +238,6 @@ class Comment extends ActiveRecord implements ScanInterface, NotificationInterfa
     }
 
     /**
-     * 机器审核
-     * @param int $id model id
-     * @param string $suggestion the ID to be looked for
-     * @return void
-     */
-    public static function review($id, $suggestion)
-    {
-        if (($model = static::findOne($id)) != null) {
-            if ($suggestion == 'pass') {
-                $model->setPublished();
-            } elseif ($suggestion == 'block') {
-                $model->setRejected('');
-            } elseif ($suggestion == 'review') { //人工审核，不做处理
-
-            }
-        }
-    }
-
-    /**
-     * 获取待审
-     * @param int $id
-     * @return string 待审核的内容字符串
-     */
-    public static function findReview($id)
-    {
-        if (($model = static::findOne($id)) != null) {
-            return $model->content;
-        }
-        return null;
-    }
-
-    /**
      * @return \yii\db\ActiveQuery
      */
     public function getSource()
@@ -288,17 +255,13 @@ class Comment extends ActiveRecord implements ScanInterface, NotificationInterfa
     }
 
     /**
-     * 保存后机器审核
+     * 保存后执行
      * @param bool $insert
      * @param array $changedAttributes
      */
     public function afterSave($insert, $changedAttributes)
     {
         if ($insert) {
-            //开始机器审核
-            Yii::$app->queue->push(new ScanTextJob([
-                'modelClass' => get_class($this), 'modelId' => $this->id, 'scenario' => 'new', 'category' => 'comment'
-            ]));
             $this->source->updateCountersAsync(['comments' => 1]);
             try {
                 Yii::$app->notification->send($this->source->user, $this);

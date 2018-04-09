@@ -36,7 +36,9 @@ class Comment extends Widget
     /** @var bool */
     public $validate = true;
 
-    /** @inheritdoc */
+    /** @inheritdoc
+     * @throws InvalidConfigException
+     */
     public function init()
     {
         parent::init();

@@ -14,7 +14,7 @@ CommentAsset::register($this);
         <div class="widget-comment-form row">
             <form class="col-md-12">
                 <div class="form-group">
-                    <textarea name="content" placeholder="<?= Comment::t('comment', 'Write your comment') ?>"
+                    <textarea name="content" placeholder="<?= Comment::t('yuncms/comment', 'Write your comment') ?>"
                               class="form-control"
                               id="comment-<?= $model_class ?>-content-<?= $model_id ?>"></textarea>
                 </div>
@@ -22,14 +22,14 @@ CommentAsset::register($this);
             <div class="col-md-12 text-right">
                 <?php if ($hide_cancel): ?>
                     <a href="#" class="text-muted collapse-cancel"
-                       data-collapse_id="comments-<?= $model_class ?>-<?= $model_id ?>"><?= Comment::t('comment', 'Clean') ?></a>
+                       data-collapse_id="comments-<?= $model_class ?>-<?= $model_id ?>"><?= Comment::t('yuncms/comment', 'Clean') ?></a>
                 <?php endif; ?>
                 <button type="submit" class="btn btn-primary btn-sm ml-10 comment-btn"
                         id="<?= $model_class ?>-comment-6-btn"
                         data-model_id="<?= $model_id ?>"
                         data-model_class="<?= $model_class ?>"
                         data-to_user_id="0"
-                ><?= Comment::t('comment', 'Submit Comment') ?></button>
+                ><?= Comment::t('yuncms/comment', 'Submit Comment') ?></button>
             </div>
         </div>
     <?php else: ?>

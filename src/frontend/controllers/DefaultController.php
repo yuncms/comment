@@ -8,15 +8,12 @@
 namespace yuncms\comment\frontend\controllers;
 
 use Yii;
-use yii\helpers\Url;
-use yii\web\Controller;
 use yii\filters\AccessControl;
 use yii\data\ActiveDataProvider;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
+use yuncms\web\Controller;
 use yuncms\comment\models\Comment;
-use yuncms\comment\frontend\models\CommentForm;
-
 
 /**
  * Class DefaultController
@@ -31,7 +28,7 @@ class DefaultController extends Controller
     {
         return [
             'access' => [
-                'class' => AccessControl::className(),
+                'class' => AccessControl::class,
                 'rules' => [
                     [
                         'allow' => true,

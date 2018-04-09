@@ -1,7 +1,7 @@
 <?php
 use yii\helpers\Url;
-use yii\helpers\Html;
-use yii\helpers\HtmlPurifier;
+use yuncms\helpers\Html;
+use yuncms\helpers\HtmlPurifier;
 ?>
 <div class="media">
     <?= $this->render(
