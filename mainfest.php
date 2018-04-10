@@ -3,7 +3,7 @@ return [
     'id'=> 'comment',
     'migrationPath' => '@vendor/yuncms/comment/migrations',
     'translations' => [
-        'yuncms/attention' => [
+        'yuncms/comment' => [
             'class' => 'yii\i18n\PhpMessageSource',
             'sourceLanguage' => 'en-US',
             'basePath' => '@vendor/yuncms/comment/messages',
