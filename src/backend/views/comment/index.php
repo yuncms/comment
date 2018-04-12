@@ -1,21 +1,20 @@
 <?php
 use yii\web\View;
-use yii\helpers\Url;
-use yii\helpers\Html;
-use yii\grid\GridView;
 use yii\widgets\Pjax;
-use xutl\inspinia\Box;
-use xutl\inspinia\Toolbar;
-use xutl\inspinia\Alert;
+use yuncms\helpers\Html;
+use yuncms\grid\GridView;
+use yuncms\admin\widgets\Box;
+use yuncms\admin\widgets\Toolbar;
+use yuncms\admin\widgets\Alert;
 
 /* @var $this yii\web\View */
-/* @var $searchModel yuncms\comment\models\CommentSearch */
+/* @var $searchModel yuncms\comment\backend\models\CommentSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = Yii::t('comment', 'Manage Comment');
+$this->title = Yii::t('yuncms', 'Manage Comment');
 $this->params['breadcrumbs'][] = $this->title;
 $this->registerJs("jQuery(\"#batch_deletion\").on(\"click\", function () {
-    yii.confirm('" . Yii::t('app', 'Are you sure you want to delete this item?') . "',function(){
+    yii.confirm('" . Yii::t('yuncms', 'Are you sure you want to delete this item?') . "',function(){
         var ids = jQuery('#gridview').yiiGridView(\"getSelectedRows\");
         jQuery.post(\"/comment/comment/batch-delete\",{ids:ids});
     });
@@ -33,12 +32,12 @@ $this->registerJs("jQuery(\"#batch_deletion\").on(\"click\", function () {
                 <div class="col-sm-4 m-b-xs">
                     <?= Toolbar::widget(['items' => [
                         [
-                            'label' => Yii::t('comment', 'Manage Comment'),
+                            'label' => Yii::t('yuncms', 'Manage Comment'),
                             'url' => ['/comment/comment/index'],
                         ],
                         [
                             'options' => ['id' => 'batch_deletion', 'class' => 'btn btn-sm btn-danger'],
-                            'label' => Yii::t('comment', 'Batch Deletion'),
+                            'label' => Yii::t('yuncms', 'Batch Deletion'),
                             'url' => 'javascript:void(0);',
                         ]
                     ]]); ?>
@@ -65,16 +64,16 @@ $this->registerJs("jQuery(\"#batch_deletion\").on(\"click\", function () {
                     'model_class',
                     'parent.content:ntext',
                     [
-                        'header' => Yii::t('comment', 'Status'),
+                        'header' => Yii::t('yuncms', 'Status'),
                         'value' => function ($model) {
                             if ($model->isDraft) {
-                                return Html::a(Yii::t('comment', 'Pending'), ['audit', 'id' => $model->id], [
+                                return Html::a(Yii::t('yuncms', 'Pending'), ['audit', 'id' => $model->id], [
                                     'class' => 'btn btn-xs btn-success btn-block',
                                     'data-method' => 'post',
-                                    'data-confirm' => Yii::t('comment', 'Are you sure you want to Accepted this comment?'),
+                                    'data-confirm' => Yii::t('yuncms', 'Are you sure you want to Accepted this comment?'),
                                 ]);
                             } else {
-                                return Yii::t('comment', 'Accepted');
+                                return Yii::t('yuncms', 'Accepted');
                             }
                         },
                         'format' => 'raw',
@@ -94,8 +93,7 @@ $this->registerJs("jQuery(\"#batch_deletion\").on(\"click\", function () {
                     ],
                     // 'updated_at',
                     [
-                        'class' => 'yii\grid\ActionColumn',
-                        'header' => Yii::t('comment', 'Operation'),
+                        'class' => 'yuncms\grid\ActionColumn',
                         'template' => '{delete}',
                         //'buttons' => [
                         //    'update' => function ($url, $model, $key) {
