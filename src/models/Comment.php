@@ -17,8 +17,6 @@ use yii\behaviors\BlameableBehavior;
 use yuncms\helpers\ArrayHelper;
 use yuncms\helpers\HtmlPurifier;
 use yuncms\db\ActiveRecord;
-use yuncms\notifications\contracts\NotificationInterface;
-use yuncms\notifications\NotificationTrait;
 use yuncms\user\models\User;
 
 /**
@@ -40,10 +38,8 @@ use yuncms\user\models\User;
  * @property-read User $toUser 用户实例
  * @property-read User $user 用户实例
  */
-class Comment extends ActiveRecord implements NotificationInterface
+class Comment extends ActiveRecord
 {
-    use NotificationTrait;
-
     //场景定义
     const SCENARIO_CREATE = 'create';//创建
     const SCENARIO_UPDATE = 'update';//更新

@@ -32,4 +32,6 @@ return [
     'You can not submit the same comment.' => '请不要重复提交',
     'source Id' => '源ID',
     'source Type' => '源模型',
+    'Comment reminder' => '评论提醒',
+    '{username} comment your {entity}' => '{username} 评论了你的 {entity}'
 ];
