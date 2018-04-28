@@ -14,6 +14,7 @@ use yii\db\ActiveQuery;
 use yii\db\BaseActiveRecord;
 use yii\behaviors\AttributeBehavior;
 use yii\behaviors\BlameableBehavior;
+use yuncms\comment\notifications\CommentNotification;
 use yuncms\helpers\ArrayHelper;
 use yuncms\helpers\HtmlPurifier;
 use yuncms\db\ActiveRecord;
@@ -242,6 +243,15 @@ class Comment extends ActiveRecord
     }
 
     /**
+     * 获取源标题
+     * @return string
+     */
+    public function getSourceTitle()
+    {
+        return null;
+    }
+    
+    /**
      * @inheritdoc
      */
     public function afterDelete()
@@ -260,7 +270,13 @@ class Comment extends ActiveRecord
         if ($insert) {
             $this->source->updateCountersAsync(['comments' => 1]);
             try {
-                Yii::$app->notification->send($this->source->user, $this);
+                Yii::$app->notification->send($this->source->user, new CommentNotification([
+                    'data' => [
+                        'username' => $this->user->nickname,
+                        'entity' => $this->getSourceTitle(),
+                        'source' => $this->source->toArray()
+                    ]
+                ]));
             } catch (InvalidConfigException $e) {
             }
         }
