@@ -106,8 +106,9 @@ class Comment extends ActiveRecord
     {
         return [
 
-            [['model_id', 'content'], 'required'],
-            [['content'], 'filter', 'filter' => 'trim'],
+            [['model_class', 'model_id', 'content'], 'required'],
+            ['model_class', 'string', 'max' => 255],
+            [['model_class', 'content'], 'filter', 'filter' => 'trim'],
             ['content', 'validateContent'],
             [['parent'], 'integer'],
             [['parent'], 'exist', 'skipOnError' => true, 'targetClass' => static::class, 'targetAttribute' => ['parent' => 'id']],
