@@ -45,6 +45,6 @@ class CommentNotification extends Notification
      */
     public function getTemplate()
     {
-        return Yii::t('yuncms/comment', '{username} comment your {entity}');
+        return Yii::t('yuncms/comment', '{username} comment your {sourceTitle}');
     }
 }
