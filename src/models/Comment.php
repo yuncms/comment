@@ -276,9 +276,9 @@ class Comment extends ActiveRecord
                 Yii::$app->notification->send($this->source->user, new CommentNotification([
                     'data' => [
                         'username' => $this->user->nickname,
-                        'entity' => $this->getSourceTitle(),
-                        'source' => $this->source->toArray(),
-                        'target' => $this->toArray()
+                        'entity' => $this->toArray(),//评论实体
+                        'source' => $this->source->toArray(),//原有任务的对象 源对象
+                        'target' => $this->source->toArray(),//目标对象 被评论的对象
                     ]
                 ]));
             } catch (InvalidConfigException $e) {
