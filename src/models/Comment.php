@@ -94,7 +94,7 @@ class Comment extends ActiveRecord
     {
         $scenarios = parent::scenarios();
         return ArrayHelper::merge($scenarios, [
-            static::SCENARIO_CREATE => ['model_class', 'model_id', 'content', 'to_user_id'],
+            static::SCENARIO_CREATE => ['model_class', 'model_id', 'content', 'to_user_id', 'parent'],
             static::SCENARIO_UPDATE => ['model_class', 'model_id', 'content', 'to_user_id'],
         ]);
     }
@@ -109,6 +109,8 @@ class Comment extends ActiveRecord
             [['model_id', 'content'], 'required'],
             [['content'], 'filter', 'filter' => 'trim'],
             ['content', 'validateContent'],
+            [['parent'], 'integer'],
+            [['parent'], 'exist', 'skipOnError' => true, 'targetClass' => static::class, 'targetAttribute' => ['parent' => 'id']],
             [['to_user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['to_user_id' => 'id']],
             ['status', 'default', 'value' => self::STATUS_DRAFT],
             ['status', 'in', 'range' => [
@@ -250,7 +252,7 @@ class Comment extends ActiveRecord
     {
         return null;
     }
-    
+
     /**
      * @inheritdoc
      */
