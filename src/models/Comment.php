@@ -321,6 +321,7 @@ class Comment extends ActiveRecord
             if ($this->parent) {
                 $notification = [
                     'username' => $this->user->nickname,
+                    'sourceTitle'=>$this->getSourceTitle(),
                     'entity' => $this->toArray(),//评论实体
                     'source' => $this->source->toArray(),//原有任务的对象 源对象
                     'target' => $this->commentParent,//目标对象 被评论的对象
@@ -329,6 +330,7 @@ class Comment extends ActiveRecord
                 $this->source->updateCountersAsync(['comments' => 1]);
                 $notification = [
                     'username' => $this->user->nickname,
+                    'sourceTitle'=>$this->getSourceTitle(),
                     'entity' => $this->toArray(),//评论实体
                     'source' => $this->source->toArray(),//原有任务的对象 源对象
                     'target' => $this->source->toArray(),//目标对象 被评论的对象
