@@ -14,7 +14,9 @@ use yii\db\ActiveQuery;
 use yii\db\BaseActiveRecord;
 use yii\behaviors\AttributeBehavior;
 use yii\behaviors\BlameableBehavior;
+use yii\db\Query;
 use yuncms\comment\notifications\CommentNotification;
+use yuncms\comment\notifications\CommentRejectedNotification;
 use yuncms\helpers\ArrayHelper;
 use yuncms\helpers\HtmlPurifier;
 use yuncms\db\ActiveRecord;
@@ -38,6 +40,7 @@ use yuncms\user\models\User;
  * @property-read boolean $isPublished 是否发布
  * @property-read User $toUser 用户实例
  * @property-read User $user 用户实例
+ * @property Comment $commentParent
  */
 class Comment extends ActiveRecord
 {
@@ -105,19 +108,38 @@ class Comment extends ActiveRecord
     public function rules()
     {
         return [
-
             [['model_class', 'model_id', 'content'], 'required'],
             ['model_class', 'string', 'max' => 255],
             [['model_class', 'content'], 'filter', 'filter' => 'trim'],
             ['content', 'validateContent'],
             [['parent'], 'integer'],
-            [['parent'], 'exist', 'skipOnError' => true, 'targetClass' => static::class, 'targetAttribute' => ['parent' => 'id']],
+            [['parent'], 'filterParent', 'when' => function () {
+                return !$this->isNewRecord;
+            }],
             [['to_user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['to_user_id' => 'id']],
             ['status', 'default', 'value' => self::STATUS_DRAFT],
             ['status', 'in', 'range' => [
                 self::STATUS_DRAFT, self::STATUS_REVIEW, self::STATUS_REJECTED, self::STATUS_PUBLISHED,
             ]]
         ];
+    }
+
+    /**
+     * Use to loop detected.
+     */
+    public function filterParent()
+    {
+        $parent = $this->parent;
+        $db = static::getDb();
+        $query = (new Query)->select(['parent'])
+            ->from(static::tableName());
+        while ($parent) {
+            if ($this->id == $parent) {
+                $this->addError('parent', Yii::t('yuncms/comment', 'Loop detected.'));
+                return;
+            }
+            $parent = $query->where(['id'=>$parent])->scalar($db);
+        }
     }
 
     /**
@@ -157,6 +179,24 @@ class Comment extends ActiveRecord
             'status' => Yii::t('yuncms/comment', 'Status'),
             'created_at' => Yii::t('yuncms/comment', 'Created At'),
         ];
+    }
+
+    /**
+     * 获取父评论
+     * @return \yii\db\ActiveQuery
+     */
+    public function getCommentParent()
+    {
+        return $this->hasOne(self::class, ['id' => 'parent']);
+    }
+
+    /**
+     * 获取子评论
+     * @return \yii\db\ActiveQuery
+     */
+    public function getComments()
+    {
+        return $this->hasMany(static::class, ['parent' => 'id']);
     }
 
     /**
@@ -233,6 +273,13 @@ class Comment extends ActiveRecord
     {
         $this->trigger(self::BEFORE_REJECTED);
         $rows = $this->updateAttributes(['status' => static::STATUS_REJECTED]);
+        try {
+            Yii::$app->notification->send($this->user, new CommentRejectedNotification(['data' => [
+                'entity' => $this->toArray(),//评论实体
+            ]]));
+        } catch (InvalidConfigException $e) {
+            Yii::error($e->getMessage(), __METHOD__);
+        }
         $this->trigger(self::AFTER_REJECTED);
         return $rows;
     }
@@ -271,20 +318,37 @@ class Comment extends ActiveRecord
     public function afterSave($insert, $changedAttributes)
     {
         if ($insert) {
-            $this->source->updateCountersAsync(['comments' => 1]);
-            try {
-                Yii::$app->notification->send($this->source->user, new CommentNotification([
-                    'data' => [
-                        'username' => $this->user->nickname,
-                        'sourceTitle' => $this->getSourceTitle(),
-                        'entity' => $this->toArray(),//评论实体
-                        'source' => $this->source->toArray(),//原有任务的对象 源对象
-                        'target' => $this->source->toArray(),//目标对象 被评论的对象
-                    ]
-                ]));
-            } catch (InvalidConfigException $e) {
+            if ($this->parent) {
+                $notification = [
+                    'username' => $this->user->nickname,
+                    'entity' => $this->toArray(),//评论实体
+                    'source' => $this->source->toArray(),//原有任务的对象 源对象
+                    'target' => $this->commentParent,//目标对象 被评论的对象
+                ];
+            } else {
+                $this->source->updateCountersAsync(['comments' => 1]);
+                $notification = [
+                    'username' => $this->user->nickname,
+                    'entity' => $this->toArray(),//评论实体
+                    'source' => $this->source->toArray(),//原有任务的对象 源对象
+                    'target' => $this->source->toArray(),//目标对象 被评论的对象
+                ];
             }
+            $this->sendNotification($notification);
         }
         parent::afterSave($insert, $changedAttributes);
+    }
+
+    /**
+     * 发送通知
+     * @param array $notification
+     */
+    protected function sendNotification($notification)
+    {
+        try {
+            Yii::$app->notification->send($this->source->user, new CommentNotification(['data' => $notification]));
+        } catch (InvalidConfigException $e) {
+            Yii::error($e->getMessage(), __METHOD__);
+        }
     }
 }
