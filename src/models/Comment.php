@@ -138,7 +138,7 @@ class Comment extends ActiveRecord
                 $this->addError('parent', Yii::t('yuncms/comment', 'Loop detected.'));
                 return;
             }
-            $parent = $query->where(['id'=>$parent])->scalar($db);
+            $parent = $query->where(['id' => $parent])->scalar($db);
         }
     }
 
@@ -318,10 +318,22 @@ class Comment extends ActiveRecord
     public function afterSave($insert, $changedAttributes)
     {
         if ($insert) {
+            $this->sendNotification();
+        }
+        parent::afterSave($insert, $changedAttributes);
+    }
+
+    /**
+     * 发送通知
+     */
+    protected function sendNotification()
+    {
+
+        try {
             if ($this->parent) {
                 $notification = [
                     'username' => $this->user->nickname,
-                    'sourceTitle'=>$this->getSourceTitle(),
+                    'sourceTitle' => $this->getSourceTitle(),
                     'entity' => $this->toArray(),//评论实体
                     'source' => $this->source->toArray(),//原有任务的对象 源对象
                     'target' => $this->commentParent,//目标对象 被评论的对象
@@ -330,24 +342,12 @@ class Comment extends ActiveRecord
                 $this->source->updateCountersAsync(['comments' => 1]);
                 $notification = [
                     'username' => $this->user->nickname,
-                    'sourceTitle'=>$this->getSourceTitle(),
+                    'sourceTitle' => $this->getSourceTitle(),
                     'entity' => $this->toArray(),//评论实体
                     'source' => $this->source->toArray(),//原有任务的对象 源对象
                     'target' => $this->source->toArray(),//目标对象 被评论的对象
                 ];
             }
-            $this->sendNotification($notification);
-        }
-        parent::afterSave($insert, $changedAttributes);
-    }
-
-    /**
-     * 发送通知
-     * @param array $notification
-     */
-    protected function sendNotification($notification)
-    {
-        try {
             Yii::$app->notification->send($this->source->user, new CommentNotification(['data' => $notification]));
         } catch (InvalidConfigException $e) {
             Yii::error($e->getMessage(), __METHOD__);
