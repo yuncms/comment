@@ -318,6 +318,7 @@ class Comment extends ActiveRecord
     public function afterSave($insert, $changedAttributes)
     {
         if ($insert) {
+            $this->source->updateCountersAsync(['comments' => 1]);
             $this->sendNotification();
         }
         parent::afterSave($insert, $changedAttributes);
@@ -339,7 +340,6 @@ class Comment extends ActiveRecord
                     'target' => $this->commentParent,//目标对象 被评论的对象
                 ];
             } else {
-                $this->source->updateCountersAsync(['comments' => 1]);
                 $notification = [
                     'username' => $this->user->nickname,
                     'sourceTitle' => $this->getSourceTitle(),
