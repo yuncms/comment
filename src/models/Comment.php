@@ -306,7 +306,7 @@ class Comment extends ActiveRecord
      */
     public function afterDelete()
     {
-        $this->source->updateCountersAsync(['comments' => -1]);
+        $this->source->updateCounters(['comments' => -1]);
         parent::afterDelete();
     }
 
@@ -318,7 +318,7 @@ class Comment extends ActiveRecord
     public function afterSave($insert, $changedAttributes)
     {
         if ($insert) {
-            $this->source->updateCountersAsync(['comments' => 1]);
+            $this->source->updateCounters(['comments' => 1]);
             $this->sendNotification();
         }
         parent::afterSave($insert, $changedAttributes);
